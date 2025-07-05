@@ -20,7 +20,6 @@ class _HomepageState extends State<Homepage> {
   final List<Widget> _pages = [
     const AppointmentPage(),
     const Placeholder(),
-    ChatListPage(),
     const UserProfilePage(),
     const HeartRateScreen()
   ];
@@ -93,8 +92,7 @@ class _HomepageState extends State<Homepage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    const TreatmentsScreen(),
+                                builder: (context) => const TreatmentsScreen(),
                               ),
                             );
                           },
@@ -147,7 +145,6 @@ class _HomepageState extends State<Homepage> {
               tabs: const [
                 GButton(icon: Icons.alarm, text: 'Appointments'),
                 GButton(icon: Icons.align_vertical_bottom, text: 'Treatments'),
-                GButton(icon: Icons.chat, text: 'Chat'),
                 GButton(icon: Icons.person, text: 'Profile'),
                 GButton(icon: Icons.monitor_heart, text: 'Heart Rate'),
               ],

@@ -1,4 +1,5 @@
+import '../domain/heart_rate.dart';
 
-import '../domain/heart_rate.dart';abstract class HeartRateRepository {
-  Stream<HeartRate> getHeartRateStream();
+abstract class HeartRateRepository {
+  Stream<List<HeartRate>> getHeartRateStream(); // antes era Stream<HeartRate>
 }

@@ -4,7 +4,6 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../domain/heart_rate.dart';
 import '../controllers/heart_rate_controller.dart';
 
-
 class HeartRateScreen extends ConsumerStatefulWidget {
   const HeartRateScreen({super.key});
 
@@ -13,18 +12,19 @@ class HeartRateScreen extends ConsumerStatefulWidget {
 }
 
 class _HeartRateScreenState extends ConsumerState<HeartRateScreen> {
-  // Banderas para asegurar que las alertas se muestren solo una vez por sesión de vista
   bool hasShownHighAlert = false;
   bool hasShownModerateAlert = false;
 
   @override
   Widget build(BuildContext context) {
+    // Corrige el tipo: es AsyncValue<List<HeartRate>>
+    ref.listen<AsyncValue<List<HeartRate>>>(heartRateControllerProvider,
+        (previous, next) {
+      final heartRates = next.asData?.value;
 
-    ref.listen<AsyncValue<List<HeartRate>>>(heartRateControllerProvider, (previous, next) {
+      if (heartRates == null || heartRates.isEmpty) return;
 
-      if (next is! AsyncData || next.value!.isEmpty) return;
-
-      final lastHeartRate = next.value!.last;
+      final lastHeartRate = heartRates.last;
       final isHigh = lastHeartRate.bpm > 120;
       final isModerate = lastHeartRate.bpm > 100 && lastHeartRate.bpm <= 120;
 
@@ -40,32 +40,27 @@ class _HeartRateScreenState extends ConsumerState<HeartRateScreen> {
 
     final asyncData = ref.watch(heartRateControllerProvider);
 
-    // 1. APLICANDO EL PATRÓN VISUAL
     return Scaffold(
-      extendBodyBehindAppBar: true, // Clave para el AppBar transparente
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text(
           'Ritmo Cardíaco',
-          style: TextStyle(fontSize: 24, color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              fontSize: 24, color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.transparent, // AppBar transparente
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton( // Botón para regresar si es necesario
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings, color: Colors.white, size: 28),
             onPressed: () {
-              // Tu lógica de configuración
+              // Lógica de configuración
             },
           ),
         ],
       ),
       body: Stack(
         children: [
-          // Fondo oscuro consistente con el resto de la app
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
@@ -78,21 +73,23 @@ class _HeartRateScreenState extends ConsumerState<HeartRateScreen> {
               ),
             ),
           ),
-          // Contenido de la página
           asyncData.when(
-            data: (data) => _buildHeartRateContent(context, data),
+            data: (data) {
+              final lastHeartRate = data.isNotEmpty ? data.last : null;
+              return _buildHeartRateContent(context, data, lastHeartRate);
+            },
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Center(child: Text('Error: $e', style: const TextStyle(color: Colors.white))),
+            error: (e, _) => Center(
+                child: Text('Error: $e',
+                    style: const TextStyle(color: Colors.white))),
           ),
         ],
       ),
     );
   }
 
-  // 3. CÓDIGO MÁS LIMPIO: UI separada en métodos
-  Widget _buildHeartRateContent(BuildContext context, List<HeartRate> data) {
-    final lastHeartRate = data.isNotEmpty ? data.last : null;
-
+  Widget _buildHeartRateContent(
+      BuildContext context, List<HeartRate> data, HeartRate? lastHeartRate) {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
@@ -100,7 +97,6 @@ class _HeartRateScreenState extends ConsumerState<HeartRateScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 20),
-            // Texto del ritmo cardíaco actual
             Center(
               child: Text(
                 '${lastHeartRate?.bpm ?? "---"} bpm',
@@ -118,16 +114,13 @@ class _HeartRateScreenState extends ConsumerState<HeartRateScreen> {
               ),
             ),
             const SizedBox(height: 30),
-            // Gráfico del ritmo cardíaco
             SizedBox(
               height: 200,
               child: _buildChart(data),
             ),
-            const Spacer(), // Ocupa el espacio disponible para empujar lo demás hacia abajo
-            // Tarjeta de contacto de emergencia
+            const Spacer(),
             _buildEmergencyContactCard(),
             const SizedBox(height: 20),
-            // Botón de "Llamar Emergencias"
             _buildEmergencyCallButton(),
           ],
         ),
@@ -141,10 +134,12 @@ class _HeartRateScreenState extends ConsumerState<HeartRateScreen> {
         lineBarsData: [
           LineChartBarData(
             spots: data
-                .map((hr) => FlSpot(hr.timestamp.millisecondsSinceEpoch.toDouble(), hr.bpm.toDouble()))
+                .map((hr) => FlSpot(
+                    hr.timestamp.millisecondsSinceEpoch.toDouble(),
+                    hr.bpm.toDouble()))
                 .toList(),
             isCurved: true,
-            color: Colors.redAccent, // Color de línea más llamativo
+            color: Colors.redAccent,
             barWidth: 3,
             dotData: const FlDotData(show: false),
             belowBarData: BarAreaData(
@@ -171,14 +166,15 @@ class _HeartRateScreenState extends ConsumerState<HeartRateScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 25, 38, 56), // Color del tema
+        color: const Color.fromARGB(255, 25, 38, 56),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: [
           const CircleAvatar(
             radius: 30,
-            backgroundImage: NetworkImage('https://st.depositphotos.com/46542440/55684/i/450/depositphotos_556849068-stock-illustration-square-face-character-stiff-art.jpg'),
+            backgroundImage: NetworkImage(
+                'https://st.depositphotos.com/46542440/55684/i/450/depositphotos_556849068-stock-illustration-square-face-character-stiff-art.jpg'),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -187,7 +183,10 @@ class _HeartRateScreenState extends ConsumerState<HeartRateScreen> {
               children: const [
                 Text(
                   'Juan Pérez',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
                 ),
                 SizedBox(height: 4),
                 Text(
@@ -198,11 +197,14 @@ class _HeartRateScreenState extends ConsumerState<HeartRateScreen> {
             ),
           ),
           IconButton(
-            onPressed: () { /* Lógica para llamar al contacto */ },
+            onPressed: () {
+              // Lógica de llamada
+            },
             icon: const Icon(Icons.phone, color: Colors.white, size: 28),
             style: IconButton.styleFrom(
-              backgroundColor: Colors.green, // Mantenemos el verde para una acción clara
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              backgroundColor: Colors.green,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
               padding: const EdgeInsets.all(12),
             ),
           )
@@ -213,19 +215,48 @@ class _HeartRateScreenState extends ConsumerState<HeartRateScreen> {
 
   Widget _buildEmergencyCallButton() {
     return ElevatedButton.icon(
-      onPressed: () { /* Lógica para llamar a emergencias */ },
+      onPressed: () {
+        // Lógica de llamada a emergencias
+      },
       icon: const Icon(Icons.call, color: Colors.white),
       label: const Text('LLAMAR A EMERGENCIAS'),
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 16),
-        backgroundColor: Colors.red.withOpacity(0.8), // Color rojo para emergencias
+        backgroundColor: Colors.red.withOpacity(0.8),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
         textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
       ),
     );
   }
 
-  // Métodos de diálogo (sin cambios)
-  void _showAlertDialog(BuildContext context, String title, String message) { /* ... tu código ... */ }
-  void _showConfirmationDialog(BuildContext context) { /* ... tu código ... */ }
+  void _showAlertDialog(BuildContext context, String title, String message) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context), child: const Text("OK"))
+        ],
+      ),
+    );
+  }
+
+  void _showConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Precaución"),
+        content: const Text(
+            "Tu ritmo cardíaco está un poco elevado. ¿Deseas contactar a tu médico?"),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancelar")),
+          TextButton(onPressed: () {}, child: const Text("Sí, contactar")),
+        ],
+      ),
+    );
+  }
 }
