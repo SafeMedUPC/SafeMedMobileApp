@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "441665247130",
+    "project_id": "fluttermedsystem",
+    "storage_bucket": "fluttermedsystem.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:441665247130:android:9512fde207135529bb8c23",
+        "android_client_info": {
+          "package_name": "com.example.medsystem_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBQVF90EhJEWpNv80Op1aSTPzs8FcwvpAc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
